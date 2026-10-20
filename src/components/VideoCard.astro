@@ -1,0 +1,220 @@
+---
+// Um vídeo vertical com marca, formato e duração por cima. Usado na grade de vídeos e na campanha.
+import { c, urlDoArquivo, type Video } from '../lib/site';
+
+interface Props {
+  video: Video;
+}
+const { video } = Astro.props;
+const descricao = `${video.formato} para ${video.marca}, ${video.duracao}`;
+const previa = !!c.videos?.previaAutomatica;
+---
+
+<figure class="video">
+  <video
+    preload="none"
+    poster={urlDoArquivo(video.capa)}
+    data-src={urlDoArquivo(video.arquivo)}
+    data-previa={previa ? '' : undefined}
+    playsinline
+    muted
+    loop
+    width="540"
+    height="960"
+    aria-label={`Vídeo: ${descricao}`}></video>
+  <button class="tocar" type="button" aria-label={`Tocar com som: ${descricao}`}>
+    <span class="circulo" aria-hidden="true">
+      {
+        previa ? (
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
+            <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path d="M8 5.5v13l10.5-6.5z" fill="currentColor" />
+          </svg>
+        )
+      }
+    </span>
+  </button>
+  {video.autoral && <span class="selo">Conteúdo autoral</span>}
+  <span class="duracao">{video.duracao}</span>
+  <figcaption>
+    <strong>{video.marca}</strong>
+    <span>{video.formato}</span>
+  </figcaption>
+</figure>
+
+<script>
+  // Só pede o vídeo ao servidor quando ele aparece na tela. A prévia toca sem som;
+  // o toque recomeça o vídeo com som e controles, pausando os outros.
+  const videos = [...document.querySelectorAll<HTMLVideoElement>('video[data-src]')];
+  const semPrevia =
+    matchMedia('(prefers-reduced-motion: reduce)').matches ||
+    (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+
+  const carregar = (v: HTMLVideoElement) => {
+    if (!v.getAttribute('src')) v.src = v.dataset.src!;
+  };
+  const previa = (v: HTMLVideoElement) => {
+    if ('previa' in v.dataset && !semPrevia) v.play().catch(() => {});
+  };
+  const voltarParaPrevia = (v: HTMLVideoElement) => {
+    v.muted = true;
+    v.loop = true;
+    v.controls = false;
+    v.closest('.video')!.classList.remove('tocando');
+  };
+
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      for (const { target, isIntersecting } of entradas) {
+        const v = target as HTMLVideoElement;
+        if (!isIntersecting) v.pause();
+        else {
+          carregar(v);
+          if (v.muted) previa(v);
+        }
+      }
+    },
+    { threshold: 0.6 },
+  );
+
+  for (const v of videos) {
+    observador.observe(v);
+    v.addEventListener('ended', () => {
+      voltarParaPrevia(v);
+      previa(v);
+    });
+  }
+
+  document.addEventListener('click', (evento) => {
+    const botao = (evento.target as Element).closest('.tocar');
+    if (!botao) return;
+    const v = botao.closest('.video')!.querySelector('video')!;
+    for (const outro of videos)
+      if (outro !== v && !outro.muted) {
+        outro.pause();
+        voltarParaPrevia(outro);
+      }
+    carregar(v);
+    v.muted = false;
+    v.loop = false;
+    v.controls = true;
+    v.currentTime = 0;
+    v.closest('.video')!.classList.add('tocando');
+    v.play().catch(() => {});
+    v.focus();
+  });
+</script>
+
+<style>
+  .video {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border-radius: max(var(--raio), 12px);
+    background: var(--superficie);
+    color: #fff;
+  }
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Escurece embaixo para a marca e o formato ficarem legíveis sobre qualquer vídeo. */
+  .video::after {
+    content: '';
+    position: absolute;
+    inset: 45% 0 0;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.78));
+    pointer-events: none;
+  }
+  .tocar {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+  }
+  .tocar:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 6px #000;
+  }
+  .circulo {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.45);
+    backdrop-filter: blur(4px);
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+  .tocar:hover .circulo {
+    transform: scale(1.08);
+    background: rgb(0 0 0 / 0.65);
+  }
+  .selo,
+  .duracao,
+  figcaption {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .selo {
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0.3em 0.65em;
+    border-radius: 999px;
+    background: #fff;
+    color: #111;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .duracao {
+    top: 0.6rem;
+    right: 0.6rem;
+    padding: 0.25em 0.55em;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.6);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption {
+    right: 0.75rem;
+    bottom: 0.7rem;
+    left: 0.75rem;
+    display: grid;
+    gap: 0.1rem;
+    line-height: 1.25;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+  figcaption strong {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.92rem;
+  }
+  figcaption span {
+    font-size: 0.8rem;
+  }
+  /* Tocando com som: some tudo o que está por cima, para os controles do vídeo ficarem livres. */
+  .tocando .tocar,
+  .tocando .selo,
+  .tocando .duracao,
+  .tocando figcaption,
+  .tocando::after {
+    display: none;
+  }
+</style>

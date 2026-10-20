@@ -1,0 +1,62 @@
+---
+// Diferenciais (3 a 5 itens curtos).
+import Cabecalho from './Cabecalho.astro';
+import { c } from '../lib/site';
+
+const diferenciais = c.diferenciais!;
+const romanos = ['i', 'ii', 'iii', 'iv', 'v'];
+---
+
+<section class="secao recuo" id="diferenciais" aria-labelledby="diferenciais-titulo">
+  <Cabecalho rotulo="Diferenciais" titulo={diferenciais.titulo} id="diferenciais-titulo" />
+  <ol class="lista">
+    {
+      diferenciais.lista.map((d, i) => (
+        <li>
+          <span class="numero" aria-hidden="true">{romanos[i]}.</span>
+          <h3>{d.titulo}</h3>
+          <p>{d.texto}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  .lista {
+    display: grid;
+    gap: 2.5rem 3rem;
+  }
+  li {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--linha);
+  }
+  .numero {
+    font-family: var(--f-titulo);
+    font-style: var(--italico);
+    font-size: 1.1rem;
+    color: var(--destaque);
+  }
+  h3 {
+    font-size: calc(clamp(1.3rem, 3vw, 1.6rem) * var(--escala));
+    line-height: 1.05;
+  }
+  p {
+    max-width: 30rem;
+    color: var(--suave);
+  }
+  @media (max-width: 639px) {
+    li {
+      justify-items: center;
+      text-align: center;
+    }
+  }
+  @media (min-width: 640px) {
+    .lista {
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,129 @@
+---
+// Topo: nicho, nome, foto, bio e os botões de contato e de ver os vídeos.
+import { Picture } from 'astro:assets';
+import { c, linkPrincipal, videosDaGrade } from '../lib/site';
+
+const [primeiro, ...resto] = c.topo.nome.trim().split(/\s+/);
+// O nome encolhe se tiver uma palavra muito comprida, para nunca sair da tela.
+const letras = Math.max(...c.topo.nome.split(/\s+/).map((p) => p.length), 4);
+const temVideos = !!c.videos?.mostrar && videosDaGrade.length > 0;
+---
+
+<section class="topo" aria-labelledby="nome" style={`--letras:${letras}`}>
+<div class="recuo capa">
+  <div class="titulo">
+    <p class="kicker">Creator UGC · {c.topo.nicho}</p>
+    <h1 id="nome">{primeiro}{resto.length > 0 && <em>{resto.join(' ')}</em>}</h1>
+  </div>
+  <figure class="foto">
+    <Picture
+      src={c.topo.foto}
+      alt={c.topo.fotoDescricao}
+      widths={[360, 540, 720, 1080]}
+      sizes="(min-width: 860px) 34vw, 80vw"
+      formats={['avif', 'webp']}
+      loading="eager"
+      fetchpriority="high"
+    />
+  </figure>
+  <div class="intro">
+    <p class="bio">{c.topo.bio}</p>
+    <div class="acoes">
+      <a class="botao" href={linkPrincipal}>{c.topo.botao.texto} <span aria-hidden="true">→</span></a>
+      {temVideos && <a class="ver" href="#videos">Ver vídeos <span aria-hidden="true">↓</span></a>}
+    </div>
+  </div>
+</div>
+</section>
+
+<style>
+  .capa {
+    display: grid;
+    gap: 1.75rem;
+    padding-top: clamp(2rem, 6vw, 4.5rem);
+  }
+  .titulo {
+    /* O nome mede a própria coluna (100cqi) para nunca quebrar no meio da palavra. */
+    container-type: inline-size;
+  }
+  .kicker {
+    margin-bottom: 0.9rem;
+    color: var(--suave);
+  }
+  h1 {
+    font-size: min(calc(clamp(3rem, 13vw, 6.25rem) * var(--escala)), calc(100cqi / (var(--letras) * var(--letra))));
+    line-height: 0.95;
+  }
+  h1 em {
+    display: block;
+    font-style: var(--italico);
+    color: var(--destaque);
+  }
+  .foto {
+    width: min(80%, 22rem);
+  }
+  .foto :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: max(var(--raio), 16px);
+  }
+  .bio {
+    max-width: 32rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+  .acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+  .ver {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ver:hover {
+    text-decoration: underline;
+  }
+  /* Celular: tudo centralizado, com a foto no meio. */
+  @media (max-width: 859px) {
+    .capa {
+      justify-items: center;
+      text-align: center;
+    }
+    /* O nome precisa da largura toda: ele mede a coluna para escolher o tamanho. */
+    .titulo,
+    .intro {
+      justify-self: stretch;
+    }
+    .bio {
+      margin-inline: auto;
+    }
+    .acoes {
+      justify-content: center;
+    }
+  }
+  @media (min-width: 860px) {
+    .capa {
+      grid-template-columns: 1.4fr 1fr;
+      grid-template-areas: 'titulo foto' 'intro foto';
+      column-gap: clamp(2rem, 5vw, 5rem);
+      align-items: end;
+    }
+    .titulo {
+      grid-area: titulo;
+    }
+    .foto {
+      grid-area: foto;
+      width: min(100%, 26rem);
+      justify-self: end;
+      align-self: center;
+    }
+    .intro {
+      grid-area: intro;
+      align-self: start;
+    }
+  }
+</style>

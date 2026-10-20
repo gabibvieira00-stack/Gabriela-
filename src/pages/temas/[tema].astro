@@ -1,0 +1,16 @@
+---
+// O mesmo portfólio em cada um dos 4 temas, para comparar (ex.: /temas/noite/).
+// Só existe com modoExemplo: true, ou no computador (npm run dev). Não entra no Google.
+import Portfolio from '../../components/Portfolio.astro';
+import { c, visualDoTema } from '../../lib/site';
+import { TEMAS, type NomeTema } from '../../lib/temas';
+
+export function getStaticPaths() {
+  if (!c.modoExemplo && !import.meta.env.DEV) return [];
+  return Object.keys(TEMAS).map((tema) => ({ params: { tema } }));
+}
+
+const visual = visualDoTema(Astro.params.tema as NomeTema);
+---
+
+<Portfolio visual={visual} indexar={false} />

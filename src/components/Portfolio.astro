@@ -1,0 +1,189 @@
+---
+// A página inteira. A ordem das seções está aqui; o conteúdo vem de src/data/creator.ts.
+import Base from '../layouts/Base.astro';
+import Topo from './Topo.astro';
+import Campanha from './Campanha.astro';
+import Videos from './Videos.astro';
+import Diferenciais from './Diferenciais.astro';
+import Marcas from './Marcas.astro';
+import Resultados from './Resultados.astro';
+import ComoTrabalho from './ComoTrabalho.astro';
+import Valores from './Valores.astro';
+import Contato from './Contato.astro';
+import { c, linkPrincipal, videosDaGrade, type Visual } from '../lib/site';
+
+interface Props {
+  visual?: Visual;
+  indexar?: boolean;
+}
+const { visual, indexar } = Astro.props;
+
+// Seção aparece se estiver com `mostrar: true` e tiver conteúdo.
+const tem = (secao: { mostrar: boolean } | undefined, ...listas: unknown[][]) =>
+  !!secao?.mostrar && listas.some((lista) => lista.length > 0);
+const t = c.comoTrabalho;
+
+// `link`: aparece no menu do cabeçalho fixo.
+const secoes = [
+  { Componente: Videos, id: 'videos', link: 'Vídeos', mostrar: tem(c.videos, videosDaGrade) },
+  { Componente: Diferenciais, id: 'diferenciais', mostrar: tem(c.diferenciais, c.diferenciais?.lista ?? []) },
+  { Componente: Marcas, id: 'marcas', mostrar: tem(c.marcas, c.marcas?.lista ?? []) },
+  {
+    Componente: Resultados,
+    id: 'resultados',
+    link: 'Resultados',
+    mostrar: tem(c.resultados, c.resultados?.numeros ?? [], c.resultados?.prints ?? [], c.resultados?.depoimentos ?? []),
+  },
+  {
+    Componente: ComoTrabalho,
+    id: 'como-trabalho',
+    link: 'Como trabalho',
+    mostrar: tem(t, t?.incluso ?? [], t?.prazo ? [t.prazo] : [], t?.direitosDeUso ? [t.direitosDeUso] : []),
+  },
+  { Componente: Valores, id: 'valores', link: 'Valores', mostrar: tem(c.valores, c.valores?.pacotes ?? [], c.valores?.avulsos ?? []) },
+  { Componente: Contato, id: 'contato', link: 'Contato', mostrar: true },
+].filter((s) => s.mostrar);
+---
+
+<Base visual={visual} indexar={indexar}>
+  {
+    c.campanha?.mostrar && (
+      <a class="faixa-campanha" href="#campanha">
+        <span class="etiqueta">{c.campanha.nome}</span>
+        <span>{c.campanha.chamada}</span>
+        <span class="chamar">
+          {c.campanha.botao} <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    )
+  }
+  <header class="barra">
+    <div class="recuo conteudo-barra">
+      <a class="nome" href="#">{c.topo.nome}</a>
+      <nav aria-label="Seções do portfólio">
+        <ul>
+          {secoes.filter((s) => s.link).map((s) => (
+            <li>
+              <a href={`#${s.id}`}>{s.link}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <a class="botao" href={linkPrincipal}>{c.topo.botao.texto}</a>
+    </div>
+  </header>
+  <main id="conteudo">
+    <Topo />
+    {c.campanha?.mostrar && <Campanha />}
+    {secoes.map(({ Componente }) => <Componente />)}
+  </main>
+  <footer class="recuo rodape">
+    <p>© {new Date().getFullYear()} {c.topo.nome}</p>
+    {c.modoExemplo && <p>Portfólio de exemplo, com dados fictícios</p>}
+  </footer>
+</Base>
+
+<style>
+  /* Faixa no alto da página enquanto a campanha estiver ligada. */
+  .faixa-campanha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 0.9rem;
+    padding: 0.6rem 1rem;
+    background: var(--campanha-fundo);
+    color: var(--campanha-texto);
+    font-size: 0.85rem;
+    text-align: center;
+    text-decoration: none;
+  }
+  .faixa-campanha .etiqueta {
+    padding: 0.2em 0.7em;
+    border-radius: 999px;
+    background: var(--campanha-texto);
+    color: var(--campanha-fundo);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .faixa-campanha .chamar {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .faixa-campanha:focus-visible {
+    outline-color: var(--campanha-texto);
+    outline-offset: -4px;
+  }
+  /* Cabeçalho que acompanha a rolagem, com o nome e o botão de contato sempre à mão. */
+  .barra {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--linha);
+    background: var(--fundo);
+  }
+  .conteudo-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3.75rem;
+  }
+  .nome {
+    overflow: hidden;
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    font-size: calc(1.2rem * var(--escala));
+    letter-spacing: var(--espaco-titulo);
+    text-transform: var(--caixa-titulo);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  nav {
+    display: none;
+  }
+  nav ul {
+    display: flex;
+    gap: 1.75rem;
+  }
+  nav a {
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  .barra .botao {
+    flex-shrink: 0;
+    min-height: 2.5rem;
+    padding: 0.55em 1.1em;
+    font-size: 0.88rem;
+  }
+  .rodape {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    margin-top: clamp(4rem, 10vw, 7rem);
+    padding-block: 1.5rem 2rem;
+    border-top: 1px solid var(--linha);
+    font-size: 0.85rem;
+    color: var(--suave);
+  }
+  @media (max-width: 759px) {
+    .rodape {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+  @media (min-width: 900px) {
+    nav {
+      display: block;
+    }
+  }
+</style>

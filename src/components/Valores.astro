@@ -1,0 +1,150 @@
+---
+// Valores: pacotes com preço (cada um com botão para o WhatsApp) e itens avulsos.
+import Cabecalho from './Cabecalho.astro';
+import { c, linkDeContato, linkPrincipal } from '../lib/site';
+
+const v = c.valores!;
+const linkDoPacote = (nome: string) =>
+  c.contato.whatsapp ? linkDeContato('whatsapp', `Oi! Vi seu portfólio e quero o pacote "${nome}".`) : linkPrincipal;
+---
+
+<section class="secao recuo" id="valores" aria-labelledby="valores-titulo">
+  <Cabecalho rotulo="Investimento" titulo={v.titulo} id="valores-titulo" />
+  {v.texto && <p class="texto">{v.texto}</p>}
+  {
+    v.pacotes.length > 0 && (
+      <ul class="pacotes">
+        {v.pacotes.map((p) => (
+          <li class:list={['pacote', { destacado: !!p.etiqueta }]}>
+            {p.etiqueta && <span class="etiqueta">{p.etiqueta}</span>}
+            <h3>{p.nome}</h3>
+            {p.detalhe && <p class="detalhe">{p.detalhe}</p>}
+            <p class="preco">{p.preco || 'Sob consulta'}</p>
+            {p.descricao && <p class="descricao">{p.descricao}</p>}
+            <a class="botao" href={linkDoPacote(p.nome)} target="_blank" rel="noopener">
+              {v.botao} <span aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    v.avulsos.length > 0 && (
+      <div class="avulsos">
+        <h3>Outros formatos</h3>
+        <dl>
+          {v.avulsos.map((a) => (
+            <div>
+              <dt>{a.nome}</dt>
+              <dd>{a.preco}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    )
+  }
+  {v.observacao && <p class="observacao">{v.observacao}</p>}
+</section>
+
+<style>
+  .texto {
+    max-width: 34rem;
+    margin: -0.75rem 0 2rem;
+    color: var(--suave);
+  }
+  @media (max-width: 759px) {
+    .texto {
+      margin-inline: auto;
+      text-align: center;
+    }
+  }
+  .pacotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem;
+  }
+  .pacote {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    border: 1px solid var(--linha);
+    border-radius: max(var(--raio), 12px);
+  }
+  .destacado {
+    border-color: var(--texto);
+    background: var(--texto);
+    color: var(--fundo);
+  }
+  .etiqueta {
+    position: absolute;
+    top: -0.75rem;
+    left: 1.5rem;
+    padding: 0.3em 0.8em;
+    border: 1px solid var(--texto);
+    border-radius: 999px;
+    background: var(--fundo);
+    color: var(--texto);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: calc(1.5rem * var(--escala));
+  }
+  .detalhe {
+    font-size: 0.95rem;
+  }
+  .preco {
+    margin-top: 0.9rem;
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    font-size: calc(clamp(1.8rem, 4vw, 2.3rem) * var(--escala));
+    letter-spacing: var(--espaco-titulo);
+    line-height: 1.1;
+  }
+  .descricao {
+    font-size: 0.92rem;
+  }
+  /* O botão fica sempre no pé do cartão, alinhado entre os pacotes. */
+  .pacote .botao {
+    margin-top: auto;
+    width: 100%;
+  }
+  .pacote > :nth-last-child(2) {
+    margin-bottom: 1.25rem;
+  }
+  .destacado .botao {
+    background: var(--fundo);
+    color: var(--texto);
+  }
+  .destacado :focus-visible {
+    outline-color: var(--fundo);
+  }
+  .avulsos {
+    max-width: 34rem;
+    margin-top: clamp(2.5rem, 6vw, 3.5rem);
+  }
+  .avulsos h3 {
+    margin-bottom: 0.75rem;
+    font-size: calc(1.35rem * var(--escala));
+  }
+  .avulsos div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.7rem;
+    border-bottom: 1px solid var(--linha);
+  }
+  .avulsos dd {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .observacao {
+    max-width: 34rem;
+    margin-top: 1.5rem;
+    color: var(--suave);
+    font-size: 0.92rem;
+  }
+</style>

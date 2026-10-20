@@ -1,0 +1,77 @@
+---
+// Marcas com quem já trabalhou. Com logo, viram cartões brancos (funcionam em qualquer tema
+// e com logos coloridos); sem nenhum logo, aparecem só os nomes.
+import { Image } from 'astro:assets';
+import Cabecalho from './Cabecalho.astro';
+import { c } from '../lib/site';
+
+const marcas = c.marcas!;
+const temLogo = marcas.lista.some((m) => m.logo);
+---
+
+<section class="secao recuo" id="marcas" aria-labelledby="marcas-titulo">
+  <Cabecalho rotulo="Marcas" titulo={marcas.titulo} id="marcas-titulo" />
+  {
+    temLogo ? (
+      <ul class="cartoes">
+        {marcas.lista.map((m) => (
+          <li>{m.logo ? <Image src={m.logo} alt={m.nome} height={56} densities={[1, 2]} /> : <span>{m.nome}</span>}</li>
+        ))}
+      </ul>
+    ) : (
+      <ul class="nomes">
+        {marcas.lista.map((m) => (
+          <li>{m.nome}</li>
+        ))}
+      </ul>
+    )
+  }
+</section>
+
+<style>
+  .cartoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+    gap: 0.75rem;
+  }
+  .cartoes li {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 5 / 3;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--linha);
+    border-radius: max(var(--raio), 12px);
+    background: #fff;
+    color: #1a1a1a;
+    font-weight: 600;
+    text-align: center;
+  }
+  .cartoes :global(img) {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 3.5rem;
+    object-fit: contain;
+  }
+  .nomes {
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    font-size: calc(clamp(1.25rem, 3vw, 1.75rem) * var(--escala));
+    letter-spacing: var(--espaco-titulo);
+    text-transform: var(--caixa-titulo);
+    line-height: 1.4;
+  }
+  .nomes li {
+    display: inline;
+  }
+  .nomes li:not(:last-child)::after {
+    content: ' · ' / '';
+    color: var(--destaque);
+    white-space: pre;
+  }
+  @media (max-width: 759px) {
+    .nomes {
+      text-align: center;
+    }
+  }
+</style>

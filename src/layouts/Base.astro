@@ -1,0 +1,285 @@
+---
+// Estrutura da página: <head> (SEO, prévia no WhatsApp, fontes) e o estilo base.
+import { Font } from 'astro:assets';
+import { c, visual as visualPadrao, endereco, tituloDaPagina, descricaoDaPagina, linkDeContato, nichosDosVideos, type Visual } from '../lib/site';
+import { TEMAS } from '../lib/temas';
+
+interface Props {
+  /** Tema da página. Padrão: o escolhido em src/data/creator.ts. */
+  visual?: Visual;
+  /** Páginas de demonstração dos temas não entram no Google. */
+  indexar?: boolean;
+}
+const { visual = visualPadrao, indexar = true } = Astro.props;
+const { paleta, tema, fontes, escuro, campanha, topoNaCampanha } = visual;
+
+// Sem endereço configurado (ex.: no computador), usa o endereço de onde a página está sendo vista.
+const base = endereco || Astro.url.origin;
+const variaveis = {
+  '--fundo': paleta.fundo,
+  '--texto': paleta.texto,
+  '--suave': paleta.suave,
+  '--superficie': paleta.superficie,
+  '--linha': paleta.linha,
+  '--destaque': paleta.destaque,
+  '--no-destaque': paleta.noDestaque,
+  '--campanha-fundo': campanha.fundo,
+  '--campanha-texto': campanha.texto,
+  '--campanha-suave': campanha.suave,
+  '--campanha-linha': campanha.linha,
+  '--f-titulo': `var(${fontes.titulo.variavel})`,
+  '--f-corpo': `var(${fontes.corpo.variavel})`,
+  '--peso-titulo': tema.peso,
+  '--caixa-titulo': tema.caixa,
+  '--espaco-titulo': tema.espacamento,
+  '--italico': fontes.titulo.italico ? 'italic' : 'normal',
+  '--raio': tema.raio,
+  '--escala': tema.escala,
+  '--letra': tema.letra,
+  'color-scheme': escuro ? 'dark' : 'light',
+};
+const estilo = Object.entries(variaveis).map(([k, v]) => `${k}:${v}`).join(';');
+const preloadTitulo = [
+  { weight: fontes.titulo.pesos[0], style: 'normal' },
+  ...(fontes.titulo.italico ? [{ weight: fontes.titulo.pesos[0], style: 'italic' }] : []),
+];
+
+// Dados estruturados para o Google entender quem é a creator.
+const perfis = [linkDeContato('instagram'), linkDeContato('tiktok')].filter(Boolean);
+const pessoa = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: c.topo.nome,
+  jobTitle: 'Creator de UGC',
+  description: descricaoDaPagina,
+  url: `${base}/`,
+  image: `${base}/og.png`,
+  ...(perfis.length > 0 && { sameAs: perfis }),
+  ...(nichosDosVideos.length > 0 && { knowsAbout: nichosDosVideos }),
+};
+const nomesDosTemas: Record<string, string> = { revista: 'Revista', noite: 'Noite', rosa: 'Rosa', terra: 'Terra' };
+---
+
+<!doctype html>
+<html lang="pt-BR" style={estilo} class:list={[{ 'topo-na-campanha': topoNaCampanha }]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloDaPagina}</title>
+    <meta name="description" content={descricaoDaPagina} />
+    {!indexar && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={`${base}/`} />
+    <meta name="theme-color" content={topoNaCampanha ? campanha.fundo : paleta.fundo} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content={c.topo.nome} />
+    <meta property="og:title" content={tituloDaPagina} />
+    <meta property="og:description" content={descricaoDaPagina} />
+    <meta property="og:url" content={`${base}/`} />
+    <meta property="og:image" content={`${base}/og.png`} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${c.topo.nome}, creator UGC`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(pessoa).replaceAll('<', '\\u003c')} />
+
+    <Font cssVariable={fontes.titulo.variavel as any} preload={preloadTitulo} />
+    <Font cssVariable={fontes.corpo.variavel as any} preload={[{ weight: 400, style: 'normal' }]} />
+  </head>
+  <body>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+    {
+      c.modoExemplo && (
+        <div class="faixa-exemplo">
+          <p>Portfólio de demonstração: a creator, as marcas e os números são fictícios.</p>
+          <nav aria-label="Ver em outro tema">
+            Ver nos temas:
+            {Object.keys(TEMAS).map((nome) => (
+              <a href={`/temas/${nome}/`} aria-current={nome === visual.nome ? 'page' : undefined}>
+                {nomesDosTemas[nome] ?? nome}
+              </a>
+            ))}
+          </nav>
+        </div>
+      )
+    }
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: var(--f-corpo);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  img,
+  video,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    text-transform: var(--caixa-titulo);
+    letter-spacing: var(--espaco-titulo);
+    line-height: 1;
+    text-wrap: balance;
+  }
+  p,
+  ul,
+  ol,
+  dl,
+  dd,
+  figure,
+  blockquote {
+    margin: 0;
+  }
+  ul,
+  ol {
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--texto);
+    outline-offset: 3px;
+  }
+  /* Os links do cabeçalho fixo param a seção logo abaixo dele, sem esconder o título. */
+  [id] {
+    scroll-margin-top: 5rem;
+  }
+
+  /* Campanha ligada num tema com topoNaCampanha: cabeçalho e topo trocam para as cores da
+     campanha. Como tudo usa as mesmas variáveis, basta trocá-las aqui. */
+  html.topo-na-campanha .barra,
+  html.topo-na-campanha .topo {
+    --fundo: var(--campanha-fundo);
+    --texto: var(--campanha-texto);
+    --destaque: var(--campanha-texto);
+    --no-destaque: var(--campanha-fundo);
+    --suave: var(--campanha-suave);
+    --linha: var(--campanha-linha);
+    background: var(--fundo);
+    color: var(--texto);
+  }
+  html.topo-na-campanha .topo {
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+  }
+  html.topo-na-campanha .campanha {
+    margin-top: 0;
+    border-top: 1px solid var(--campanha-linha);
+  }
+
+  /* Peças usadas em várias seções */
+  .recuo {
+    width: min(100% - 2 * clamp(1rem, 5vw, 3rem), 76rem);
+    margin-inline: auto;
+  }
+  .kicker {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    min-height: 3rem;
+    padding: 0.85em 1.5em;
+    border-radius: max(var(--raio), 2px);
+    background: var(--destaque);
+    color: var(--no-destaque);
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .botao:hover {
+    transform: translateY(-2px);
+  }
+  .botao:active {
+    transform: none;
+  }
+  .secao {
+    padding-block: clamp(4rem, 11vw, 8rem) 0;
+  }
+  .pular {
+    position: absolute;
+    left: 1rem;
+    top: -10rem;
+    z-index: 10;
+    padding: 0.75rem 1rem;
+    background: var(--texto);
+    color: var(--fundo);
+  }
+  .pular:focus {
+    top: 1rem;
+  }
+  .faixa-exemplo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--linha);
+    background: var(--superficie);
+    color: var(--texto);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .faixa-exemplo nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.9rem;
+  }
+  .faixa-exemplo a {
+    font-weight: 600;
+  }
+  .faixa-exemplo a[aria-current] {
+    text-decoration: none;
+  }
+  .faixa-exemplo a[aria-current]::before {
+    content: '● ' / '';
+  }
+
+</style>

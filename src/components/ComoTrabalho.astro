@@ -1,0 +1,83 @@
+---
+// Como eu trabalho: ficha técnica com prazo, o que está incluso e direitos de uso.
+import Cabecalho from './Cabecalho.astro';
+import { c } from '../lib/site';
+
+const t = c.comoTrabalho!;
+---
+
+<section class="secao recuo" id="como-trabalho" aria-labelledby="como-trabalho-titulo">
+  <Cabecalho rotulo="Processo" titulo={t.titulo} id="como-trabalho-titulo" />
+  <div>
+    {
+      (t.prazo || t.incluso.length > 0 || t.direitosDeUso) && (
+        <dl class="ficha">
+          {t.prazo && (
+            <div>
+              <dt class="kicker">Prazo</dt>
+              <dd>{t.prazo}</dd>
+            </div>
+          )}
+          {t.incluso.length > 0 && (
+            <div>
+              <dt class="kicker">O que está incluso</dt>
+              <dd>
+                <ul class="incluso">{t.incluso.map((item) => <li>{item}</li>)}</ul>
+              </dd>
+            </div>
+          )}
+          {t.direitosDeUso && (
+            <div>
+              <dt class="kicker">Direitos de uso</dt>
+              <dd>{t.direitosDeUso}</dd>
+            </div>
+          )}
+        </dl>
+      )
+    }
+    {t.observacao && <p class="observacao">{t.observacao}</p>}
+  </div>
+</section>
+
+<style>
+  .ficha > div {
+    display: grid;
+    gap: 0.5rem;
+    padding-block: 1.25rem;
+    border-top: 1px solid var(--linha);
+  }
+  .ficha > div:last-child {
+    border-bottom: 1px solid var(--linha);
+  }
+  dd {
+    font-size: 1.05rem;
+  }
+  .incluso li {
+    position: relative;
+    padding-left: 1.3rem;
+  }
+  .incluso li + li {
+    margin-top: 0.35rem;
+  }
+  .incluso li::before {
+    content: '+' / '';
+    position: absolute;
+    left: 0;
+    color: var(--destaque);
+    font-weight: 600;
+  }
+  .observacao {
+    max-width: 34rem;
+    margin-top: 2rem;
+    color: var(--suave);
+  }
+  @media (min-width: 640px) {
+    .ficha > div {
+      grid-template-columns: 13rem 1fr;
+      column-gap: 2rem;
+    }
+    .ficha dt {
+      padding-top: 0.3rem;
+    }
+  }
+</style>

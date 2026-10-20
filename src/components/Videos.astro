@@ -1,0 +1,164 @@
+---
+// Vídeos verticais. Com 2 nichos ou mais, aparecem separados por nicho (todos abertos, um
+// bloco embaixo do outro), com atalhos no alto que acompanham a rolagem.
+import Cabecalho from './Cabecalho.astro';
+import VideoCard from './VideoCard.astro';
+import { c, videosDaGrade, chaveDoNicho, type Video } from '../lib/site';
+
+const v = c.videos!;
+
+// Agrupa na ordem em que os nichos aparecem na lista; vídeos sem nicho vão para o fim.
+const grupos = new Map<string, { nome: string; chave: string; videos: Video[] }>();
+for (const video of videosDaGrade) {
+  const chave = video.nicho ? chaveDoNicho(video.nicho) : 'outros';
+  if (!grupos.has(chave)) grupos.set(chave, { nome: video.nicho || 'Outros vídeos', chave, videos: [] });
+  grupos.get(chave)!.videos.push(video);
+}
+const lista = [...grupos.values()].sort((a, b) => Number(a.chave === 'outros') - Number(b.chave === 'outros'));
+const porNicho = lista.length >= 2;
+const quantos = (n: number) => `${n} ${n === 1 ? 'vídeo' : 'vídeos'}`;
+---
+
+<section class="secao recuo" id="videos" aria-labelledby="videos-titulo">
+  <Cabecalho rotulo="Portfólio" titulo={v.titulo} id="videos-titulo" />
+  {v.texto && <p class="texto">{v.texto}</p>}
+  {
+    porNicho && (
+      <nav class="atalhos" aria-label="Ir para um nicho">
+        <ul>
+          {lista.map((g) => (
+            <li>
+              <a href={`#nicho-${g.chave}`}>
+                {g.nome} <span>{g.videos.length}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+  {
+    lista.map((g) => (
+      <div class="grupo" id={porNicho ? `nicho-${g.chave}` : undefined}>
+        {porNicho && (
+          <h3>
+            {g.nome} <span>{quantos(g.videos.length)}</span>
+          </h3>
+        )}
+        <ul class="grade">
+          {g.videos.map((video) => (
+            <li>
+              <VideoCard video={video} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<style>
+  .texto {
+    max-width: 34rem;
+    margin: -0.75rem 0 1.5rem;
+    color: var(--suave);
+  }
+  /* Atalhos dos nichos. No computador ficam presos abaixo do cabeçalho enquanto a marca rola. */
+  .atalhos ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .atalhos a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    min-height: 2.4rem;
+    padding: 0.45em 1em;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s ease;
+  }
+  .atalhos a:hover {
+    border-color: var(--texto);
+  }
+  .atalhos span {
+    font-size: 0.8em;
+    color: var(--suave);
+    font-variant-numeric: tabular-nums;
+  }
+  .grupo {
+    /* O título do nicho para logo abaixo do cabeçalho fixo. */
+    scroll-margin-top: 5rem;
+  }
+  .grupo + .grupo {
+    margin-top: clamp(2.5rem, 6vw, 3.5rem);
+  }
+  .atalhos + .grupo {
+    margin-top: 1.75rem;
+  }
+  h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    font-size: calc(clamp(1.4rem, 3.5vw, 1.9rem) * var(--escala));
+  }
+  h3 span {
+    font-family: var(--f-corpo);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--suave);
+  }
+  .grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  @media (max-width: 759px) {
+    .texto {
+      margin-inline: auto;
+      text-align: center;
+    }
+    h3 {
+      justify-content: center;
+    }
+    .atalhos ul {
+      justify-content: center;
+    }
+    .atalhos a {
+      min-height: 2.25rem;
+      font-size: 0.85rem;
+    }
+  }
+  @media (min-width: 760px) {
+    .atalhos {
+      position: sticky;
+      top: 3.75rem;
+      z-index: 5;
+      margin-inline: calc(-1 * clamp(1rem, 5vw, 3rem));
+      padding: 0.6rem clamp(1rem, 5vw, 3rem);
+      background: var(--fundo);
+    }
+    .grupo {
+      scroll-margin-top: 8.5rem;
+    }
+  }
+  /* 2 colunas no celular e 4 a partir do tablet: um nicho com 4 vídeos fecha a linha certinho. */
+  @media (min-width: 640px) {
+    .grade {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .grade {
+      gap: 1.25rem;
+    }
+  }
+</style>

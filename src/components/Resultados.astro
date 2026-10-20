@@ -1,0 +1,167 @@
+---
+// Resultados: números, prints e depoimentos. Cada parte some se a lista estiver vazia.
+import { Image } from 'astro:assets';
+import Cabecalho from './Cabecalho.astro';
+import { c } from '../lib/site';
+
+const { titulo, numeros, prints, depoimentos } = c.resultados!;
+---
+
+<section class="secao recuo" id="resultados" aria-labelledby="resultados-titulo">
+  <Cabecalho rotulo="Resultados" titulo={titulo} id="resultados-titulo" />
+  {
+    numeros.length > 0 && (
+      <dl class="numeros">
+        {numeros.map((n) => (
+          <div>
+            <dt>{n.legenda}</dt>
+            <dd>{n.valor}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+  <div class="provas">
+  {
+    prints.length > 0 && (
+      <div class="prints">
+        {prints.map((p) => (
+          <figure>
+            <Image src={p.imagem} alt={p.legenda} widths={[320, 480, 720]} sizes="(min-width: 760px) 30vw, 46vw" />
+            <figcaption>{p.legenda}</figcaption>
+          </figure>
+        ))}
+      </div>
+    )
+  }
+  {
+    depoimentos.length > 0 && (
+      <div class="depoimentos">
+        {depoimentos.map((d) => (
+          <figure>
+            <blockquote>
+              <p>{d.texto}</p>
+            </blockquote>
+            <figcaption>
+              {d.autor}
+              {d.marca && <span>, {d.marca}</span>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )
+  }
+  </div>
+</section>
+
+<style>
+  .numeros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 2rem 3rem;
+  }
+  .numeros div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--linha);
+  }
+  dd {
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    font-size: calc(clamp(2.6rem, 8vw, 4.25rem) * var(--escala));
+    letter-spacing: var(--espaco-titulo);
+    line-height: 0.9;
+    color: var(--destaque);
+  }
+  dt {
+    max-width: 18rem;
+    color: var(--suave);
+  }
+  /* Prints e depoimentos lado a lado no computador. */
+  .provas {
+    display: grid;
+    gap: 3rem;
+    margin-top: clamp(3rem, 8vw, 4.5rem);
+  }
+  .provas:not(:has(*)) {
+    display: none;
+  }
+  @media (min-width: 860px) {
+    .provas:has(.prints):has(.depoimentos) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      column-gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+    }
+  }
+  .prints {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(46%, 13rem), 1fr));
+    gap: 1.5rem 1rem;
+  }
+  .prints :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--raio);
+    box-shadow: 0 0 0 1px var(--linha);
+  }
+  .prints figcaption {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--suave);
+  }
+  .depoimentos {
+    display: grid;
+    gap: 3rem;
+  }
+  blockquote p {
+    max-width: 46rem;
+    font-family: var(--f-titulo);
+    font-style: var(--italico);
+    font-size: calc(clamp(1.3rem, 3.5vw, 1.9rem) * var(--escala));
+    line-height: 1.25;
+    text-wrap: pretty;
+  }
+  blockquote p::before {
+    content: '“';
+    color: var(--destaque);
+  }
+  blockquote p::after {
+    content: '”';
+    color: var(--destaque);
+  }
+  .depoimentos figcaption {
+    margin-top: 1rem;
+    font-weight: 600;
+  }
+  .depoimentos figcaption::before {
+    content: '— ' / '';
+  }
+  .depoimentos figcaption span {
+    font-weight: 400;
+  }
+  @media (max-width: 759px) {
+    .numeros div {
+      align-items: center;
+      text-align: center;
+    }
+    /* Um print fica no meio; dois ou mais ficam lado a lado. */
+    .prints {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      text-align: center;
+    }
+    .prints figure {
+      width: min(46%, 15rem);
+    }
+    .prints figure:only-child {
+      width: min(70%, 15rem);
+    }
+    .depoimentos {
+      text-align: center;
+    }
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+// Contato: frase de fechamento e a lista de canais.
+import { c, linkDeContato, telefoneLegivel } from '../lib/site';
+
+const { titulo, texto, whatsapp, email, instagram, tiktok, midiaKit } = c.contato;
+const canais = [
+  whatsapp && { rede: 'WhatsApp', valor: telefoneLegivel(whatsapp.numero), href: linkDeContato('whatsapp'), fora: true },
+  email && { rede: 'E-mail', valor: email, href: linkDeContato('email'), fora: false },
+  instagram && { rede: 'Instagram', valor: `@${instagram}`, href: linkDeContato('instagram'), fora: true },
+  tiktok && { rede: 'TikTok', valor: `@${tiktok}`, href: linkDeContato('tiktok'), fora: true },
+  midiaKit && { rede: 'Mídia kit', valor: 'Abrir o mídia kit', href: /^https:/.test(midiaKit) ? midiaKit : `/${midiaKit}`, fora: true },
+].filter((canal) => !!canal);
+---
+
+<section class="secao recuo contato" id="contato" aria-labelledby="contato-titulo">
+  <p class="kicker">Contato</p>
+  <h2 id="contato-titulo">{titulo}</h2>
+  {texto && <p class="texto">{texto}</p>}
+  <ul class="canais">
+    {
+      canais.map((canal) => (
+        <li>
+          <a href={canal.href} {...(canal.fora ? { target: '_blank', rel: 'noopener' } : {})}>
+            <span class="rede">{canal.rede}</span>
+            <span class="valor">{canal.valor}</span>
+            <span class="seta" aria-hidden="true">↗</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .kicker {
+    color: var(--suave);
+  }
+  h2 {
+    margin-top: 0.6rem;
+    font-size: calc(clamp(2.25rem, 7vw, 4.25rem) * var(--escala));
+    line-height: 1;
+  }
+  .texto {
+    max-width: 34rem;
+    margin-top: 1.25rem;
+  }
+  @media (max-width: 759px) {
+    .kicker,
+    h2 {
+      text-align: center;
+    }
+    .texto {
+      margin-inline: auto;
+      text-align: center;
+    }
+  }
+  .canais {
+    margin-top: clamp(2rem, 5vw, 3rem);
+  }
+  .canais a {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.2rem 1rem;
+    padding-block: 0.95rem;
+    border-top: 1px solid var(--linha);
+    text-decoration: none;
+  }
+  .canais li:last-child a {
+    border-bottom: 1px solid var(--linha);
+  }
+  .rede {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .valor {
+    font-family: var(--f-titulo);
+    font-weight: var(--peso-titulo);
+    font-size: calc(clamp(1.3rem, 3.5vw, 1.85rem) * var(--escala));
+    letter-spacing: var(--espaco-titulo);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+  .seta {
+    font-size: 1.4rem;
+    transition: transform 0.15s ease;
+  }
+  .canais a:hover .valor {
+    color: var(--destaque);
+  }
+  .canais a:hover .seta {
+    transform: translate(3px, -3px);
+  }
+  @media (min-width: 760px) {
+    .canais a {
+      grid-template-columns: 12rem 1fr auto;
+      column-gap: 2rem;
+    }
+    .rede {
+      grid-column: auto;
+    }
+  }
+</style>

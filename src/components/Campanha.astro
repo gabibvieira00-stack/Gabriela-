@@ -1,0 +1,100 @@
+---
+// Bloco da campanha sazonal (Black Friday, Natal...), com os vídeos marcados com ela.
+import VideoCard from './VideoCard.astro';
+import { c, linkDeContato, linkPrincipal, videosDaCampanha } from '../lib/site';
+
+const campanha = c.campanha!;
+const link = c.contato.whatsapp
+  ? linkDeContato('whatsapp', campanha.mensagemWhatsapp || `Oi! Vi seu portfólio e quero falar sobre ${campanha.nome}.`)
+  : linkPrincipal;
+---
+
+<section class="campanha" id="campanha" aria-labelledby="campanha-titulo">
+  <div class="recuo grade">
+    <div class="texto">
+      <p class="kicker">Edição especial · {campanha.nome}</p>
+      <h2 id="campanha-titulo">{campanha.chamada}</h2>
+      {campanha.texto && <p class="descricao">{campanha.texto}</p>}
+      <a class="botao" href={link}>{campanha.botao} <span aria-hidden="true">→</span></a>
+    </div>
+    {
+      videosDaCampanha.length > 0 && (
+        <ul class="trilho" aria-label={`Vídeos de ${campanha.nome}`}>
+          {videosDaCampanha.map((v) => (
+            <li>
+              <VideoCard video={v} />
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .campanha {
+    margin-top: clamp(3.5rem, 8vw, 6rem);
+    padding-block: clamp(2.75rem, 6vw, 4.5rem);
+    background: var(--campanha-fundo);
+    color: var(--campanha-texto);
+  }
+  .campanha :focus-visible {
+    outline-color: var(--campanha-texto);
+  }
+  .grade {
+    display: grid;
+    gap: 2.5rem;
+  }
+  .kicker {
+    margin-bottom: 1.25rem;
+  }
+  h2 {
+    font-size: calc(clamp(2rem, 6vw, 3.4rem) * var(--escala));
+    line-height: 1;
+  }
+  .descricao {
+    max-width: 30rem;
+    margin-top: 1.25rem;
+  }
+  .botao {
+    margin-top: 1.75rem;
+    background: var(--campanha-texto);
+    color: var(--campanha-fundo);
+  }
+  .trilho {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(62%, 15rem);
+    gap: 1rem;
+    margin-inline: calc(-1 * clamp(1rem, 5vw, 3rem));
+    padding-inline: clamp(1rem, 5vw, 3rem);
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: clamp(1rem, 5vw, 3rem);
+    scrollbar-width: thin;
+  }
+  .trilho li {
+    scroll-snap-align: start;
+  }
+  @media (max-width: 859px) {
+    .texto {
+      text-align: center;
+    }
+    .descricao {
+      margin-inline: auto;
+    }
+  }
+  @media (min-width: 860px) {
+    .grade {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+      column-gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+    }
+    .trilho {
+      grid-auto-columns: minmax(12rem, 1fr);
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+</style>

@@ -1,0 +1,28 @@
+{
+  "name": "portfolio-ugc",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "comprimir": "node scripts/comprimir.mjs"
+  },
+  "dependencies": {
+    "@fontsource/bodoni-moda": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/dm-serif-display": "^5.3.0",
+    "@fontsource/figtree": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/instrument-sans": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/young-serif": "^5.3.0",
+    "astro": "^7.4.1",
+    "satori": "^0.63.2",
+    "sharp": "^0.35.5"
+  },
+  "engines": {
+    "node": ">=22.22.0"
+  }
+}
